@@ -1,3 +1,6 @@
+目前webcam執行
+python detect_and_track.py --weights best.pt --source 0 --colored-trk --detect_violation no-helmet
+
 # yolov7-object-tracking
 
 ### New Features
