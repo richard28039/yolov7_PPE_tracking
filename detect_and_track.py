@@ -58,6 +58,47 @@ def draw_boxes(img, bbox, identities=None, color=None , categories=None, names=N
 #..............................................................................
 
 
+#................................Detect no helmet or no ...............................
+
+def detect_violation(img, identities, categories, names):
+    option = opt.detect_violation
+    
+    recorded_pairs = set()
+
+    with open("violation_log.txt", "r") as file:
+        recorded_pairs = set()
+        for line in file:
+            pair = tuple(map(int, line.strip().split(',')))
+            recorded_pairs.add(pair)
+
+    with open("violation_log.txt", "a") as file:
+        for i in range(len(identities)):
+            cat = int(categories[i]) if categories is not None else 0
+            id = int(identities[i]) if identities is not None else 0
+            label = str(id) + "_" + names[cat]
+
+            pair = (identities[i], categories[i])
+            if option == 'no-helmet-vest':
+                if pair not in recorded_pairs:
+                    if pair[1] == 8 or pair[1] == 7:
+                        file.write(f"{int(pair[0])}, {int(pair[1])}\n")
+                        cv2.imwrite(f"./violation_img/viloation_{label}.jpg", img)
+                        recorded_pairs.add(pair)
+            elif option == 'no-helmet':
+                if pair not in recorded_pairs:
+                    if pair[1] == 7:
+                        file.write(f"{int(pair[0])}, {int(pair[1])}\n")
+                        cv2.imwrite(f"./violation_img/viloation_{label}.jpg", img)
+                        recorded_pairs.add(pair)
+            elif option == 'no-vest':
+                if pair not in recorded_pairs:
+                    if pair[1] == 8:
+                        file.write(f"{int(pair[0])}, {int(pair[1])}\n")
+                        cv2.imwrite(f"./violation_img/viloation_{label}.jpg", img)
+                        recorded_pairs.add(pair)
+
+#............................... Detect no helmet  ............................
+
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace, colored_trk, save_bbox_dim, save_with_object_id= opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace, opt.colored_trk, opt.save_bbox_dim, opt.save_with_object_id
     save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
@@ -67,7 +108,7 @@ def detect(save_img=False):
 
     #.... Initialize SORT .... 
     #......................... 
-    sort_max_age = 5 
+    sort_max_age = 150 
     sort_min_hits = 2
     sort_iou_thresh = 0.2
     sort_tracker = Sort(max_age=sort_max_age,
@@ -232,7 +273,7 @@ def detect(save_img=False):
                                     int(track.centroidarr[i][1])), 
                                     (int(track.centroidarr[i+1][0]),
                                     int(track.centroidarr[i+1][1])),
-                                    rand_color_list[track.id % amount_rand_color_prime], thickness=2) 
+                                    rand_color_list[track.id % amount_rand_color_prime], thickness=3) 
                                     for i,_ in  enumerate(track.centroidarr) 
                                       if i < len(track.centroidarr)-1 ] 
                     #draw same color tracks
@@ -262,6 +303,7 @@ def detect(save_img=False):
                     identities = tracked_dets[:, 8]
                     categories = tracked_dets[:, 4]
                     draw_boxes(im0, bbox_xyxy, identities, colors ,categories, names, save_with_object_id, txt_path)
+                    detect_violation(im0, identities, categories, names)
             else: #SORT should be updated even with no detections
                 tracked_dets = sort_tracker.update()
             #........................................................
@@ -275,6 +317,9 @@ def detect(save_img=False):
                 cv2.imshow(str(p), im0)
                 if cv2.waitKey(1) == ord('q'):  # q to quit
                   cv2.destroyAllWindows()
+                  with open('violation_log.txt','w+') as file:
+                      file.seek(0)
+                      file.write("")
                   raise StopIteration
 
             # Save results (image with detections)
@@ -329,6 +374,7 @@ if __name__ == '__main__':
     parser.add_argument('--colored-trk', action='store_true', help='assign different color to every track')
     parser.add_argument('--save-bbox-dim', action='store_true', help='save bounding box dimensions with --save-txt tracks')
     parser.add_argument('--save-with-object-id', action='store_true', help='save results with object id to *.txt')
+    parser.add_argument('--detect_violation', default= 'no-helmet-vest',choices=['no-helmet', 'no-vest', 'no-helmet-vest'])
 
     parser.set_defaults(download=True)
     opt = parser.parse_args()
