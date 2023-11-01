@@ -261,7 +261,6 @@ def detect(save_img=False):
                 # Run SORT
                 tracked_dets = sort_tracker.update(dets_to_sort)
                 tracks =sort_tracker.getTrackers()
-
                 txt_str = ""
 
                 #loop over tracks
@@ -277,14 +276,14 @@ def detect(save_img=False):
                                     for i,_ in  enumerate(track.centroidarr) 
                                       if i < len(track.centroidarr)-1 ] 
                     #draw same color tracks
-                    else:
-                        [cv2.line(im0, (int(track.centroidarr[i][0]),
-                                    int(track.centroidarr[i][1])), 
-                                    (int(track.centroidarr[i+1][0]),
-                                    int(track.centroidarr[i+1][1])),
-                                    (255,0,0), thickness=2) 
-                                    for i,_ in  enumerate(track.centroidarr) 
-                                      if i < len(track.centroidarr)-1 ] 
+                    # else:
+                    #     [cv2.line(im0, (int(track.centroidarr[i][0]),
+                    #                 int(track.centroidarr[i][1])), 
+                    #                 (int(track.centroidarr[i+1][0]),
+                    #                 int(track.centroidarr[i+1][1])),
+                    #                 (255,0,0), thickness=2) 
+                    #                 for i,_ in  enumerate(track.centroidarr) 
+                    #                   if i < len(track.centroidarr)-1 ] 
 
                     if save_txt and not save_with_object_id:
                         # Normalize coordinates
@@ -315,6 +314,8 @@ def detect(save_img=False):
             # Stream results
             if view_img:
                 cv2.imshow(str(p), im0)
+                if cv2.waitKey(1) == ord('t'):
+                    colored_trk = not colored_trk
                 if cv2.waitKey(1) == ord('q'):  # q to quit
                   cv2.destroyAllWindows()
                   with open('violation_log.txt','w+') as file:
