@@ -1,8 +1,6 @@
 目前webcam執行 ：python detect_and_track.py --weights best.pt --source 0 --colored-trk --detect_violation no-helmet
 
-baseline去這幹：https://github.com/WongKinYiu/yolov7
-
-總dataset、train好的model放這：https://drive.google.com/drive/folders/1C3HVVNHu1vm1Bzz4xVkXOP1n-mlCsaDh?usp=sharing
+baseline去這拿：https://github.com/WongKinYiu/yolov7
 
 reference: https://github.com/snehilsanyal/Construction-Site-Safety-PPE-Detection
 
